@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Cyberpunk 3D Orb</title>
+
+    <!-- ================================================================= -->
+    <!--                         唯一需要你修改的地方                        -->
+    <!-- ================================================================= -->
+    
+    <!-- 🔴 必须修改：请把你上传后的这个网页的【真实网址】填在下面 content="" 里 -->
+    <!-- 举例：如果你传到了 https://mysite.com/test.html，下面就填这个地址 -->
+    <meta name="twitter:player" content="https://REPLACE_THIS_WITH_YOUR_ACTUAL_URL.html">
+
+    <!-- ================================================================= -->
+    <!--                下方内容我都帮你填好了，不用动                    -->
+    <!-- ================================================================= -->
+
+    <meta name="twitter:card" content="player">
+    <meta name="twitter:site" content="@X"> <!-- 默认测试账号 -->
+    <meta name="twitter:title" content="交互式 3D 体验">
+    <meta name="twitter:description" content="Web3D 实时渲染演示。点击并拖拽以旋转视角。">
+    
+    <!-- 我找了一张高清的 3D 抽象图作为默认封面，你可以直接用 -->
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop">
+
+    <meta name="twitter:player:width" content="600">
+    <meta name="twitter:player:height" content="600">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
+        #ui-layer {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            text-align: center;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .pill {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 20px;
+            border-radius: 50px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 13px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        #loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-family: monospace;
+            z-index: 20;
+            transition: opacity 0.5s;
+        }
+    </style>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <div id="loader">INITIALIZING SYSTEM...</div>
+
+    <div id="ui-layer">
+        <div class="pill">Interactive WebGL Display</div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        const container = document.getElementById('canvas-container');
+        
+        // 场景搭建
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x050505);
+        scene.fog = new THREE.FogExp2(0x050505, 0.002);
+
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 0, 15);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.0;
+        container.appendChild(renderer.domElement);
+
+        // 创建更复杂的几何体组合
+        const group = new THREE.Group();
+        scene.add(group);
+
+        // 核心球体
+        const geometry = new THREE.IcosahedronGeometry(3, 1);
+        
+        // 材质：黑色金属反光
+        const materialMain = new THREE.MeshPhysicalMaterial({
+            color: 0x000000,
+            roughness: 0.1,
+            metalness: 0.9,
+            clearcoat: 1.0,
+            clearcoatRoughness: 0.1,
+            emissive: 0x220033,
+            emissiveIntensity: 0.2
+        });
+        
+        const mesh = new THREE.Mesh(geometry, materialMain);
+        group.add(mesh);
+
+        // 外部线框笼子
+        const wireGeo = new THREE.IcosahedronGeometry(4.5, 2);
+        const wireMat = new THREE.MeshBasicMaterial({ 
+            color: 0x00ff88, 
+            wireframe: true,
+            transparent: true,
+            opacity: 0.15 
+        });
+        const wireMesh = new THREE.Mesh(wireGeo, wireMat);
+        group.add(wireMesh);
+
+        // 环绕的粒子环
+        const particleCount = 600;
+        const pGeo = new THREE.BufferGeometry();
+        const pPos = [];
+        const pSizes = [];
+        
+        for(let i=0; i<particleCount; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const radius = 6 + Math.random() * 4;
+            // 螺旋分布
+            const x = Math.cos(angle) * radius;
+            const y = (Math.random() - 0.5) * 4;
+            const z = Math.sin(angle) * radius;
+            
+            pPos.push(x, y, z);
+            pSizes.push(Math.random() * 0.1);
+        }
+        
+        pGeo.setAttribute('position', new THREE.Float32BufferAttribute(pPos, 3));
+        const pMat = new THREE.PointsMaterial({
+            color: 0x00aaff,
+            size: 0.1,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending
+        });
+        const particleSystem = new THREE.Points(pGeo, pMat);
+        group.add(particleSystem);
+
+        // 灯光
+        const light1 = new THREE.DirectionalLight(0xffffff, 3);
+        light1.position.set(10, 10, 10);
+        scene.add(light1);
+        
+        const light2 = new THREE.PointLight(0xff0066, 10, 50);
+        light2.position.set(-10, -10, 0);
+        scene.add(light2);
+
+        const light3 = new THREE.PointLight(0x00ffcc, 10, 50);
+        light3.position.set(10, -5, 5);
+        scene.add(light3);
+
+        // 控制器
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 1.0;
+        controls.enableZoom = false; // 在卡片里禁止缩放比较好，防止误触
+
+        // 动画
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const time = Date.now() * 0.0005;
+            
+            // 复杂的自转逻辑
+            mesh.rotation.y = time;
+            mesh.rotation.z = time * 0.5;
+            
+            wireMesh.rotation.y = -time * 0.5;
+            wireMesh.rotation.x = Math.sin(time) * 0.2;
+
+            particleSystem.rotation.y = time * 0.2;
+
+            // 脉冲效果
+            const scale = 1 + Math.sin(time * 2) * 0.02;
+            mesh.scale.set(scale, scale, scale);
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        document.getElementById('loader').style.opacity = '0';
+        setTimeout(() => document.getElementById('loader').remove(), 500);
+
+        animate();
+    </script>
+</body>
+</html>
