@@ -6,24 +6,22 @@
     <title>Cyberpunk 3D Orb</title>
 
     <!-- ================================================================= -->
-    <!--                         唯一需要你修改的地方                        -->
+    <!--                       已更新你的真实地址                            -->
     <!-- ================================================================= -->
     
-    <!-- 🔴 必须修改：请把你上传后的这个网页的【真实网址】填在下面 content="" 里 -->
-    <!-- 举例：如果你传到了 https://mysite.com/test.html，下面就填这个地址 -->
+    <!-- 1. 播放器地址：指向你的 GitHub Pages -->
     <meta name="twitter:player" content="https://yixiang-li.github.io/3d-viewer/">
 
-    <!-- ================================================================= -->
-    <!--                下方内容我都帮你填好了，不用动                    -->
+    <!-- 2. 封面图地址：指向你即将上传的截图 -->
+    <!-- 注意：你需要在 GitHub 仓库里上传一张名为 screenshot.png 的图片 -->
+    <meta name="twitter:image" content="https://yixiang-li.github.io/3d-viewer/screenshot.png">
+
     <!-- ================================================================= -->
 
     <meta name="twitter:card" content="player">
-    <meta name="twitter:site" content="@X"> <!-- 默认测试账号 -->
-    <meta name="twitter:title" content="交互式 3D 体验">
-    <meta name="twitter:description" content="Web3D 实时渲染演示。点击并拖拽以旋转视角。">
-    
-    <!-- 我找了一张高清的 3D 抽象图作为默认封面，你可以直接用 -->
-    <meta name="twitter:image" content="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop">
+    <meta name="twitter:site" content="@X">
+    <meta name="twitter:title" content="Interactive 3D Experience">
+    <meta name="twitter:description" content="Real-time WebGL rendering demo. Click to interact.">
 
     <meta name="twitter:player:width" content="600">
     <meta name="twitter:player:height" content="600">
@@ -90,10 +88,10 @@
 </head>
 <body>
 
-    <div id="loader">INITIALIZING SYSTEM...</div>
+    <div id="loader">INITIALIZING...</div>
 
     <div id="ui-layer">
-        <div class="pill">Interactive WebGL Display</div>
+        <div class="pill" id="status-text">Interactive WebGL • Press 'P' for Screenshot</div>
     </div>
 
     <div id="canvas-container"></div>
@@ -112,21 +110,20 @@
         const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.set(0, 0, 15);
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        // 注意：这里开启 preserveDrawingBuffer: true 才能截图
+        const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.0;
         container.appendChild(renderer.domElement);
 
-        // 创建更复杂的几何体组合
+        // 几何体组合
         const group = new THREE.Group();
         scene.add(group);
 
         // 核心球体
         const geometry = new THREE.IcosahedronGeometry(3, 1);
-        
-        // 材质：黑色金属反光
         const materialMain = new THREE.MeshPhysicalMaterial({
             color: 0x000000,
             roughness: 0.1,
@@ -136,11 +133,10 @@
             emissive: 0x220033,
             emissiveIntensity: 0.2
         });
-        
         const mesh = new THREE.Mesh(geometry, materialMain);
         group.add(mesh);
 
-        // 外部线框笼子
+        // 外部线框
         const wireGeo = new THREE.IcosahedronGeometry(4.5, 2);
         const wireMat = new THREE.MeshBasicMaterial({ 
             color: 0x00ff88, 
@@ -151,22 +147,18 @@
         const wireMesh = new THREE.Mesh(wireGeo, wireMat);
         group.add(wireMesh);
 
-        // 环绕的粒子环
+        // 粒子
         const particleCount = 600;
         const pGeo = new THREE.BufferGeometry();
         const pPos = [];
-        const pSizes = [];
         
         for(let i=0; i<particleCount; i++) {
             const angle = Math.random() * Math.PI * 2;
             const radius = 6 + Math.random() * 4;
-            // 螺旋分布
             const x = Math.cos(angle) * radius;
             const y = (Math.random() - 0.5) * 4;
             const z = Math.sin(angle) * radius;
-            
             pPos.push(x, y, z);
-            pSizes.push(Math.random() * 0.1);
         }
         
         pGeo.setAttribute('position', new THREE.Float32BufferAttribute(pPos, 3));
@@ -184,41 +176,29 @@
         const light1 = new THREE.DirectionalLight(0xffffff, 3);
         light1.position.set(10, 10, 10);
         scene.add(light1);
-        
         const light2 = new THREE.PointLight(0xff0066, 10, 50);
         light2.position.set(-10, -10, 0);
         scene.add(light2);
-
         const light3 = new THREE.PointLight(0x00ffcc, 10, 50);
         light3.position.set(10, -5, 5);
         scene.add(light3);
 
-        // 控制器
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.autoRotate = true;
         controls.autoRotateSpeed = 1.0;
-        controls.enableZoom = false; // 在卡片里禁止缩放比较好，防止误触
+        controls.enableZoom = false;
 
-        // 动画
         function animate() {
             requestAnimationFrame(animate);
-            
             const time = Date.now() * 0.0005;
-            
-            // 复杂的自转逻辑
             mesh.rotation.y = time;
             mesh.rotation.z = time * 0.5;
-            
             wireMesh.rotation.y = -time * 0.5;
             wireMesh.rotation.x = Math.sin(time) * 0.2;
-
             particleSystem.rotation.y = time * 0.2;
-
-            // 脉冲效果
             const scale = 1 + Math.sin(time * 2) * 0.02;
             mesh.scale.set(scale, scale, scale);
-
             controls.update();
             renderer.render(scene, camera);
         }
@@ -233,6 +213,32 @@
         setTimeout(() => document.getElementById('loader').remove(), 500);
 
         animate();
+
+        // ============================================
+        //              截图功能实现
+        // ============================================
+        window.addEventListener('keydown', function(e) {
+            if (e.key.toLowerCase() === 'p') {
+                takeScreenshot();
+            }
+        });
+
+        function takeScreenshot() {
+            // 重新渲染一帧以确保 buffer 里有数据
+            renderer.render(scene, camera);
+            
+            // 导出图片
+            const link = document.createElement('a');
+            link.setAttribute('download', 'screenshot.png');
+            link.setAttribute('href', renderer.domElement.toDataURL("image/png").replace("image/png", "image/octet-stream"));
+            link.click();
+            
+            // 提示
+            const status = document.getElementById('status-text');
+            const originalText = status.innerText;
+            status.innerText = "Screenshot Saved!";
+            setTimeout(() => status.innerText = originalText, 2000);
+        }
     </script>
 </body>
 </html>
