@@ -14,24 +14,33 @@
     <meta name="twitter:title" content="Coffee Break - AI Generated 3D Model">
     <meta name="twitter:description" content="Prompt: A realistic coffee cup with orange sleeve... View in 3D.">
     
-    <!-- ⚠️ 部署后请修改：这是预览图。 -->
-    <!-- Twitter 无法自动读取 Canvas 内容，你必须手动截图上传一张图片，并把链接填在这里。 -->
-    <!-- 建议使用页面右上角的 'Capture Thumbnail' 功能生成图片。 -->
-    <meta name="twitter:image" content="https://cdn.meshy.ai/uploads/prod/171713161a2057ca…portrait/019a9074-8a2e-7ad2-9ee3-83de10ed4149.jpg">
+    <!-- 预览图: Twitter 只能显示静态图片，无法直接渲染 3D -->
+    <meta name="twitter:image" content="https://cdn.meshy.ai/uploads/prod/171713161a2057ca29672023d573663a/tasks/018fe007-425b-74b8-9366-07e594274944/portrait/019a9074-8a2e-7ad2-9ee3-83de10ed4149.jpg">
+    <meta property="og:image" content="https://cdn.meshy.ai/uploads/prod/171713161a2057ca29672023d573663a/tasks/018fe007-425b-74b8-9366-07e594274944/portrait/019a9074-8a2e-7ad2-9ee3-83de10ed4149.jpg">
     
-    <!-- [已替换] Player URL: 指向你的 GitHub Pages 地址 + ?mode=embed -->
-    <!-- 这告诉 Twitter：在卡片里加载这个 URL (纯净模式) -->
+    <!-- [关键] Player URL: 只有这个链接带上了 ?mode=embed 参数 -->
+    <!-- Twitter 抓取时会用这个带参数的链接，从而触发纯净模式 -->
     <meta name="twitter:player" content="https://yixiang-li.github.io/3d-viewer/index.html?mode=embed">
-    
     <meta name="twitter:player:width" content="1200">
     <meta name="twitter:player:height" content="1200">
 
-    <!-- Open Graph (Discord/Telegram/LinkedIn) -->
     <meta property="og:url" content="https://yixiang-li.github.io/3d-viewer/">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Coffee Break - AI Generated 3D Model">
-    <meta property="og:description" content="View this interactive 3D model created with Meshy AI.">
-    <meta property="og:image" content="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=1200&auto=format&fit=crop">
+
+    <!-- 修复逻辑: 严格依赖 URL 参数检测 -->
+    <script>
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            // 只有当 URL 里明确包含 ?mode=embed 时，才进入纯净模式
+            // 去掉了 iframe 检测，防止误伤正常预览
+            const isEmbed = urlParams.get('mode') === 'embed';
+            
+            if (isEmbed) {
+                document.documentElement.classList.add('embed-mode');
+                window.__IS_EMBED__ = true;
+            }
+        })();
+    </script>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -70,10 +79,10 @@
             background: radial-gradient(circle at center, #222 0%, #050505 100%);
         }
 
-        /* Embed 模式样式 */
-        body.embed-mode .ui-layer { display: none !important; }
-        body.embed-mode #embed-cta { display: flex !important; }
-        body.embed-mode #canvas-wrapper { background: #050505; }
+        /* Embed 模式样式 - 优先级最高 */
+        html.embed-mode body .ui-layer { display: none !important; }
+        html.embed-mode body #embed-cta { display: flex !important; }
+        html.embed-mode body #canvas-wrapper { background: #050505; }
 
         /* 滚动条 */
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
@@ -163,17 +172,16 @@
                 </div>
             </div>
 
-            <!-- Embed 模式 CTA (默认隐藏) -->
-            <a id="embed-cta" href="#" target="_blank" style="display:none;" class="absolute bottom-5 left-5 z-50 bg-white text-black py-2.5 px-5 rounded-full font-bold text-sm flex items-center gap-2 hover:scale-105 transition-transform shadow-lg no-underline">
+            <!-- Embed 模式 CTA (默认隐藏，仅在 URL 含 mode=embed 时显示) -->
+            <a id="embed-cta" href="https://yixiang-li.github.io/3d-viewer/" target="_blank" style="display:none;" class="absolute bottom-5 left-5 z-50 bg-white text-black py-2.5 px-5 rounded-full font-bold text-sm flex items-center gap-2 hover:scale-105 transition-transform shadow-lg no-underline">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5 9.5 9.75 12 11zm0 2.5l-5-2.5-5 2.5 10 5 10-5-5-2.5-5 2.5z"/></svg>
                 Create with Meshy
             </a>
         </main>
 
-        <!-- 3. 右侧详情面板 (现在是绝对定位+响应式，保证能看到) -->
+        <!-- 3. 右侧详情面板 -->
         <aside id="right-panel" class="ui-layer absolute lg:relative right-0 top-0 h-full w-[340px] bg-meshy-sidebar border-l border-meshy-border flex flex-col z-40 panel-transition shadow-2xl lg:shadow-none">
             
-            <!-- 移动端关闭按钮 -->
             <button class="lg:hidden absolute top-2 right-2 text-gray-400 p-2" onclick="toggleRightPanel()"><i class="fa-solid fa-times"></i></button>
 
             <div class="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-6">
@@ -234,7 +242,7 @@
                     </div>
                 </div>
 
-                <!-- 缩略图预览 (模拟 CDN 区域) -->
+                <!-- 缩略图预览 -->
                 <div id="thumbnail-preview-area" class="hidden">
                     <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Thumbnail (Generated)</div>
                     <div class="relative group aspect-video bg-black rounded-lg border border-meshy-border overflow-hidden">
@@ -283,27 +291,26 @@
 
         // ----------------- 逻辑控制 -----------------
         
-        // 1. Embed 模式
-        const urlParams = new URLSearchParams(window.location.search);
-        const isEmbed = urlParams.has('mode') && urlParams.get('mode') === 'embed';
-        if (isEmbed) {
-            document.body.classList.add('embed-mode');
-            const cta = document.getElementById('embed-cta');
-            if(cta) cta.href = "https://yixiang-li.github.io/3d-viewer/"; // 固定跳转到主页
-        } else {
+        const isEmbed = window.__IS_EMBED__;
+        
+        if (!isEmbed) {
             // 普通模式：确保右侧面板在小屏下默认关闭，大屏下打开
             if(window.innerWidth < 1024) {
                 document.getElementById('right-panel').classList.add('panel-closed');
             }
+        } else {
+             // 纯净模式逻辑
+             const cta = document.getElementById('embed-cta');
+             if(cta) cta.href = "https://yixiang-li.github.io/3d-viewer/"; 
         }
 
-        // 2. 右侧面板开关逻辑 (全局函数)
+        // 右侧面板开关逻辑
         window.toggleRightPanel = function() {
             const panel = document.getElementById('right-panel');
             panel.classList.toggle('panel-closed');
         }
 
-        // 3. Three.js 场景
+        // Three.js 场景
         const container = document.getElementById('canvas-wrapper');
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
         renderer.setSize(container.clientWidth, container.clientHeight);
@@ -345,7 +352,7 @@
             const sleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.81, 0.72, 0.6, 64), matSleeve);
             sleeve.position.y = 0.7; sleeve.castShadow = true; group.add(sleeve);
             
-            // Sleeve Textures (Lines)
+            // Sleeve Textures
             for(let i=0; i<6; i++) {
                 const ring = new THREE.Mesh(new THREE.TorusGeometry(0.77, 0.005, 4, 64), new THREE.MeshBasicMaterial({color: 0xcc6600}));
                 ring.rotation.x = Math.PI/2; 
@@ -361,7 +368,6 @@
             const lidTop = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.8, 0.1, 64), matLid);
             lidTop.position.y = 1.55;
             lidGroup.add(lidTop);
-            // Sip Hole
             const hole = new THREE.Mesh(new THREE.CapsuleGeometry(0.06, 0.1, 4, 8), new THREE.MeshStandardMaterial({color:0x000000}));
             hole.position.set(0, 1.62, 0.5);
             hole.rotation.x = Math.PI/2;
@@ -384,6 +390,7 @@
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
         controls.enablePan = false;
+        
         if(isEmbed) {
             controls.autoRotate = true;
             controls.autoRotateSpeed = 2.0;
@@ -402,43 +409,36 @@
             camera.updateProjectionMatrix();
             renderer.setSize(container.clientWidth, container.clientHeight);
             
-            // 响应式面板逻辑
-            if(window.innerWidth >= 1024) {
-                document.getElementById('right-panel').classList.remove('panel-closed');
-            } else {
-                document.getElementById('right-panel').classList.add('panel-closed');
+            if(!isEmbed) {
+                if(window.innerWidth >= 1024) {
+                    document.getElementById('right-panel').classList.remove('panel-closed');
+                } else {
+                    document.getElementById('right-panel').classList.add('panel-closed');
+                }
             }
         });
 
-        // 4. 截图功能
+        // 截图功能
         window.takeScreenshot = function() {
             const overlay = document.getElementById('flash-overlay');
             overlay.classList.add('do-flash');
             setTimeout(() => overlay.classList.remove('do-flash'), 500);
-
             renderer.render(scene, camera);
             
             try {
                 const dataURL = renderer.domElement.toDataURL('image/png');
-                
-                // 模拟 "CDN 上传" -> 显示在界面右侧
                 const previewArea = document.getElementById('thumbnail-preview-area');
                 const img = document.getElementById('generated-thumbnail');
                 previewArea.classList.remove('hidden');
                 img.src = dataURL;
 
-                // 自动打开面板让用户看到
                 const panel = document.getElementById('right-panel');
-                if(panel.classList.contains('panel-closed')) {
-                    toggleRightPanel();
-                }
+                if(panel.classList.contains('panel-closed')) toggleRightPanel();
 
-                // 同时也下载
                 const link = document.createElement('a');
                 link.download = 'meshy-thumbnail.png';
                 link.href = dataURL;
                 link.click();
-
             } catch (e) {
                 console.error(e);
                 alert("Screenshot failed.");
