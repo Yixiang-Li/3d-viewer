@@ -14,30 +14,36 @@
     <meta name="twitter:title" content="Coffee Break - AI Generated 3D Model">
     <meta name="twitter:description" content="Prompt: A realistic coffee cup with orange sleeve... View in 3D.">
     
-    <!-- 预览图: Twitter 只能显示静态图片，无法直接渲染 3D -->
+    <!-- ⚠️ 修复图片链接：请确保这里填入的是完整的 URL，不要包含 '...' 省略号 -->
     <meta name="twitter:image" content="https://cdn.meshy.ai/uploads/prod/171713161a2057ca29672023d573663a/tasks/018fe007-425b-74b8-9366-07e594274944/portrait/019a9074-8a2e-7ad2-9ee3-83de10ed4149.jpg">
     <meta property="og:image" content="https://cdn.meshy.ai/uploads/prod/171713161a2057ca29672023d573663a/tasks/018fe007-425b-74b8-9366-07e594274944/portrait/019a9074-8a2e-7ad2-9ee3-83de10ed4149.jpg">
     
-    <!-- [关键] Player URL: 只有这个链接带上了 ?mode=embed 参数 -->
-    <!-- Twitter 抓取时会用这个带参数的链接，从而触发纯净模式 -->
-    <meta name="twitter:player" content="https://yixiang-li.github.io/3d-viewer/index.html?mode=embed">
+    <!-- [关键修复] Player URL: -->
+    <!-- 1. 加上了 mode=embed -->
+    <!-- 2. 加上了 &v=final 以强制 Twitter 刷新缓存 (如果是旧链接缓存导致的) -->
+    <meta name="twitter:player" content="https://yixiang-li.github.io/3d-viewer/index.html?mode=embed&v=final">
+    
     <meta name="twitter:player:width" content="1200">
     <meta name="twitter:player:height" content="1200">
 
     <meta property="og:url" content="https://yixiang-li.github.io/3d-viewer/">
     <meta property="og:type" content="website">
 
-    <!-- 修复逻辑: 严格依赖 URL 参数检测 -->
+    <!-- 提前执行的脚本：必须在所有 CSS 加载前运行，防止 UI 闪烁 -->
     <script>
         (function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            // 只有当 URL 里明确包含 ?mode=embed 时，才进入纯净模式
-            // 去掉了 iframe 检测，防止误伤正常预览
-            const isEmbed = urlParams.get('mode') === 'embed';
-            
-            if (isEmbed) {
-                document.documentElement.classList.add('embed-mode');
-                window.__IS_EMBED__ = true;
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                // 严格检测 mode=embed
+                const isEmbed = urlParams.get('mode') === 'embed';
+                
+                if (isEmbed) {
+                    document.documentElement.classList.add('embed-mode');
+                    window.__IS_EMBED__ = true;
+                    console.log('Twitter Player Mode Detected: UI Hidden');
+                }
+            } catch (e) {
+                console.error('Embed detection failed:', e);
             }
         })();
     </script>
@@ -79,10 +85,28 @@
             background: radial-gradient(circle at center, #222 0%, #050505 100%);
         }
 
-        /* Embed 模式样式 - 优先级最高 */
-        html.embed-mode body .ui-layer { display: none !important; }
-        html.embed-mode body #embed-cta { display: flex !important; }
-        html.embed-mode body #canvas-wrapper { background: #050505; }
+        /* ========================================= */
+        /* Embed 模式专用样式 (最高优先级)  */
+        /* ========================================= */
+        
+        /* 1. 隐藏所有带有 ui-layer 类的元素 */
+        html.embed-mode .ui-layer { 
+            display: none !important; 
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        /* 2. 显示 CTA 按钮 */
+        html.embed-mode #embed-cta { 
+            display: flex !important; 
+        }
+
+        /* 3. 调整背景颜色更纯净 */
+        html.embed-mode body,
+        html.embed-mode #canvas-wrapper { 
+            background: #050505 !important; 
+        }
 
         /* 滚动条 */
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
@@ -173,7 +197,7 @@
             </div>
 
             <!-- Embed 模式 CTA (默认隐藏，仅在 URL 含 mode=embed 时显示) -->
-            <a id="embed-cta" href="https://yixiang-li.github.io/3d-viewer/" target="_blank" style="display:none;" class="absolute bottom-5 left-5 z-50 bg-white text-black py-2.5 px-5 rounded-full font-bold text-sm flex items-center gap-2 hover:scale-105 transition-transform shadow-lg no-underline">
+            <a id="embed-cta" href="https://yixiang-li.github.io/3d-viewer/" target="_blank" style="display:none;" class="absolute bottom-5 left-5 z-50 bg-white text-black py-2.5 px-5 rounded-full font-bold text-sm flex items-center gap-2 hover:scale-105 transition-transform shadow-lg no-underline cursor-pointer">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5 9.5 9.75 12 11zm0 2.5l-5-2.5-5 2.5 10 5 10-5-5-2.5-5 2.5z"/></svg>
                 Create with Meshy
             </a>
@@ -293,13 +317,14 @@
         
         const isEmbed = window.__IS_EMBED__;
         
+        // 普通模式下控制右侧面板显隐
         if (!isEmbed) {
-            // 普通模式：确保右侧面板在小屏下默认关闭，大屏下打开
             if(window.innerWidth < 1024) {
-                document.getElementById('right-panel').classList.add('panel-closed');
+                const p = document.getElementById('right-panel');
+                if(p) p.classList.add('panel-closed');
             }
         } else {
-             // 纯净模式逻辑
+             // 纯净模式逻辑: 确保 CTA 链接正确
              const cta = document.getElementById('embed-cta');
              if(cta) cta.href = "https://yixiang-li.github.io/3d-viewer/"; 
         }
