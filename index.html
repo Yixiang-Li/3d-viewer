@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- 添加 theme-color，让 Discord 嵌入条颜色匹配 -->
+    <meta name="theme-color" content="#ccff00">
     <title>You're Invited to Meshy | Claim Your Free Month</title>
 
     <!-- ================================================================================== -->
@@ -16,23 +18,24 @@
     <meta name="twitter:description" content="Interact with this 3D model and claim your reward to start creating.">
     <meta name="twitter:image" content="https://cdn.meshy.ai/referral-assets/cup_cdn.png">
 
-    <!-- 2. 通用 Open Graph 配置 (Discord, Telegram, WhatsApp, LinkedIn, Facebook 等) -->
+    <!-- [关键修改] 调整播放器比例为 16:9 (标准视频比例) -->
+    <!-- 之前的 1200x1200 会导致 X 上显示正方形，改成 1280x720 会显示为正常的宽屏矩形 -->
+    <meta name="twitter:player" content="https://yixiang-li.github.io/3d-viewer/index.html?mode=embed&v=ratio_fix_v1">
+    <meta name="twitter:player:width" content="1280">
+    <meta name="twitter:player:height" content="720">
+
+    <!-- 2. 通用 Open Graph 配置 (Discord, Telegram, WhatsApp, LinkedIn 等) -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="Your friend gifted you a free month on Meshy!">
     <meta property="og:description" content="Interact with this 3D model and claim your reward to start creating.">
     <meta property="og:url" content="https://yixiang-li.github.io/3d-viewer/">
     
-    <!-- [关键] 这里是其他平台抓取的图片 -->
     <meta property="og:image" content="https://cdn.meshy.ai/referral-assets/cup_cdn.png">
-    <!-- 建议加上宽高，帮助 WhatsApp/Discord 更快渲染 -->
+    <!-- [关键] 明确告诉 Discord 图片是大图尺寸 -->
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/png">
     
-    <!-- Player URL: 更新版本号 &v=social_final 以刷新缓存 -->
-    <meta name="twitter:player" content="https://yixiang-li.github.io/3d-viewer/index.html?mode=embed&v=social_final">
-    <meta name="twitter:player:width" content="1200">
-    <meta name="twitter:player:height" content="1200">
-
     <!-- 提前执行的 Embed 检测脚本 -->
     <script>
         (function() {
