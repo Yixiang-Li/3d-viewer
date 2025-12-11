@@ -2,243 +2,449 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Cyberpunk 3D Orb</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Coffee Break | Meshy 3D Asset</title>
 
-    <!-- ================================================================= -->
-    <!--                       已更新你的真实地址                            -->
-    <!-- ================================================================= -->
-    
-    <!-- 1. 播放器地址：指向你的 GitHub Pages -->
-    <meta name="twitter:player" content="https://yixiang-li.github.io/3d-viewer/">
-
-    <!-- 2. 封面图地址：指向你即将上传的截图 -->
-    <!-- 注意：你需要在 GitHub 仓库里上传一张名为 screenshot.png 的图片 -->
-    <meta name="twitter:image" content="https://yixiang-li.github.io/3d-viewer/screenshot.png">
-
-    <!-- ================================================================= -->
+    <!-- ================================================================================== -->
+    <!--                          Twitter Player Card 配置区                                 -->
+    <!-- ================================================================================== -->
 
     <meta name="twitter:card" content="player">
-    <meta name="twitter:site" content="@X">
-    <meta name="twitter:title" content="Interactive 3D Experience">
-    <meta name="twitter:description" content="Real-time WebGL rendering demo. Click to interact.">
-
-    <meta name="twitter:player:width" content="600">
-    <meta name="twitter:player:height" content="600">
+    <meta name="twitter:site" content="@MeshyAI">
+    <meta name="twitter:title" content="Coffee Break - AI Generated 3D Model">
+    <meta name="twitter:description" content="Prompt: A realistic coffee cup with orange sleeve... View in 3D.">
     
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background-color: #000;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
+    <!-- ⚠️ 部署后请修改：这是预览图。 -->
+    <!-- Twitter 无法自动读取 Canvas 内容，你必须手动截图上传一张图片，并把链接填在这里。 -->
+    <!-- 建议使用页面右上角的 'Capture Thumbnail' 功能生成图片。 -->
+    <meta name="twitter:image" content="https://cdn.meshy.ai/uploads/prod/171713161a2057ca…portrait/019a9074-8a2e-7ad2-9ee3-83de10ed4149.jpg">
+    
+    <!-- [已替换] Player URL: 指向你的 GitHub Pages 地址 + ?mode=embed -->
+    <!-- 这告诉 Twitter：在卡片里加载这个 URL (纯净模式) -->
+    <meta name="twitter:player" content="https://yixiang-li.github.io/3d-viewer/index.html?mode=embed">
+    
+    <meta name="twitter:player:width" content="1200">
+    <meta name="twitter:player:height" content="1200">
 
-        #canvas-container {
-            width: 100vw;
-            height: 100vh;
-            display: block;
-        }
+    <!-- Open Graph (Discord/Telegram/LinkedIn) -->
+    <meta property="og:url" content="https://yixiang-li.github.io/3d-viewer/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Coffee Break - AI Generated 3D Model">
+    <meta property="og:description" content="View this interactive 3D model created with Meshy AI.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=1200&auto=format&fit=crop">
 
-        #ui-layer {
-            position: absolute;
-            bottom: 30px;
-            width: 100%;
-            text-align: center;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        .pill {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 8px 20px;
-            border-radius: 50px;
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 13px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-
-        #loader {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-family: monospace;
-            z-index: 20;
-            transition: opacity 0.5s;
-        }
-    </style>
-
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        meshy: {
+                            bg: '#000000',
+                            sidebar: '#121212',
+                            panel: '#1e1e1e',
+                            border: '#2a2a2a',
+                            accent: '#ccff00',
+                            accentHover: '#b3e600',
+                            text: '#ffffff',
+                            subtext: '#9ca3af',
+                            input: '#0a0a0a'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
             }
         }
     </script>
+
+    <style>
+        body { background-color: #000; color: white; overflow: hidden; font-family: 'Inter', sans-serif; }
+        
+        #canvas-wrapper {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
+            background: radial-gradient(circle at center, #222 0%, #050505 100%);
+        }
+
+        /* Embed 模式样式 */
+        body.embed-mode .ui-layer { display: none !important; }
+        body.embed-mode #embed-cta { display: flex !important; }
+        body.embed-mode #canvas-wrapper { background: #050505; }
+
+        /* 滚动条 */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+        /* 面板动画 */
+        .panel-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .panel-closed { transform: translateX(100%); }
+        
+        /* 闪光特效 */
+        @keyframes flash { 0% { opacity: 1; } 100% { opacity: 0; } }
+        .do-flash { position: fixed; inset: 0; background: white; z-index: 100; animation: flash 0.3s ease-out forwards; pointer-events: none; }
+    </style>
+
+    <script type="importmap">
+        { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+    </script>
 </head>
-<body>
+<body class="antialiased h-screen w-screen flex flex-col">
 
-    <div id="loader">INITIALIZING...</div>
+    <!-- 1. 顶部导航 -->
+    <header class="ui-layer h-14 bg-meshy-sidebar border-b border-meshy-border flex items-center justify-between px-4 z-50 shrink-0 relative">
+        <div class="flex items-center gap-6">
+            <div class="flex items-center gap-2 text-meshy-accent font-bold text-xl tracking-tight cursor-pointer">
+                <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5 9.5 9.75 12 11zm0 2.5l-5-2.5-5 2.5 10 5 10-5-5-2.5-5 2.5z"/></svg>
+                Meshy
+            </div>
+            <nav class="hidden md:flex items-center gap-1 text-sm font-medium text-gray-400">
+                <a href="#" class="text-white bg-white/10 px-3 py-1.5 rounded-md">Workspace</a>
+                <a href="#" class="hover:text-white px-3 py-1.5 rounded-md hover:bg-white/5 transition">Community</a>
+                <a href="#" class="hover:text-white px-3 py-1.5 rounded-md hover:bg-white/5 transition">API</a>
+            </nav>
+        </div>
 
-    <div id="ui-layer">
-        <div class="pill" id="status-text">Interactive WebGL • Press 'P' for Screenshot</div>
+        <div class="flex items-center gap-3">
+            <button onclick="takeScreenshot()" class="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-700 transition" title="生成预览图">
+                <i class="fa-solid fa-camera"></i> <span class="hidden sm:inline">Capture Thumbnail</span>
+            </button>
+            <div class="hidden md:flex items-center bg-yellow-500/10 text-yellow-500 px-3 py-1 rounded-full text-xs font-bold border border-yellow-500/20">
+                <i class="fa-solid fa-coins mr-1.5"></i> 1,900
+            </div>
+            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-blue-500 border border-white/20 ml-1"></div>
+            
+            <!-- 移动端：右侧面板开关 -->
+            <button id="toggle-panel-btn" class="lg:hidden w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white" onclick="toggleRightPanel()">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- 主体布局 -->
+    <div class="flex-1 flex relative overflow-hidden">
+        
+        <!-- 2. 左侧 3D 区域 -->
+        <main class="flex-1 relative bg-black group overflow-hidden">
+            <div id="canvas-wrapper"></div>
+            <div id="flash-overlay"></div>
+
+            <!-- 悬浮数据 -->
+            <div class="ui-layer absolute top-4 left-4 bg-black/60 backdrop-blur-md rounded-lg p-3 min-w-[160px] border border-white/5 pointer-events-none select-none">
+                <div class="grid grid-cols-2 gap-y-1 text-[10px] text-gray-400">
+                    <span>Faces</span> <span class="text-white text-right font-mono">40,502</span>
+                    <span>Vertices</span> <span class="text-white text-right font-mono">26,315</span>
+                </div>
+            </div>
+
+            <!-- 左侧工具栏 -->
+            <div class="ui-layer absolute top-20 left-4 flex flex-col gap-2">
+                <div class="bg-meshy-panel/80 backdrop-blur border border-meshy-border rounded-lg p-1 flex flex-col">
+                    <button class="w-9 h-9 text-gray-400 hover:text-white hover:bg-white/10 rounded transition"><i class="fa-solid fa-cube"></i></button>
+                    <button class="w-9 h-9 text-gray-400 hover:text-white hover:bg-white/10 rounded transition"><i class="fa-solid fa-border-all"></i></button>
+                    <button class="w-9 h-9 text-gray-400 hover:text-white hover:bg-white/10 rounded transition"><i class="fa-regular fa-image"></i></button>
+                    <button class="w-9 h-9 text-gray-400 hover:text-white hover:bg-white/10 rounded transition"><i class="fa-solid fa-sun"></i></button>
+                </div>
+            </div>
+
+            <!-- 底部控制条 -->
+            <div class="ui-layer absolute bottom-6 left-1/2 -translate-x-1/2 bg-meshy-panel/90 backdrop-blur border border-meshy-border rounded-full px-4 py-2 flex items-center gap-4 shadow-xl">
+                <div class="flex items-center gap-2 text-[10px] text-meshy-accent font-bold px-2 py-0.5 bg-meshy-accent/10 rounded uppercase">
+                    <i class="fa-solid fa-bolt"></i> Preview
+                </div>
+                <div class="w-px h-3 bg-white/10"></div>
+                <div class="text-gray-400 text-xs flex gap-4">
+                    <span class="hover:text-white cursor-pointer"><i class="fa-solid fa-mouse mr-1"></i> Orbit</span>
+                    <span class="hover:text-white cursor-pointer"><i class="fa-solid fa-hand-pointer mr-1"></i> Pan</span>
+                </div>
+            </div>
+
+            <!-- Embed 模式 CTA (默认隐藏) -->
+            <a id="embed-cta" href="#" target="_blank" style="display:none;" class="absolute bottom-5 left-5 z-50 bg-white text-black py-2.5 px-5 rounded-full font-bold text-sm flex items-center gap-2 hover:scale-105 transition-transform shadow-lg no-underline">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5 9.5 9.75 12 11zm0 2.5l-5-2.5-5 2.5 10 5 10-5-5-2.5-5 2.5z"/></svg>
+                Create with Meshy
+            </a>
+        </main>
+
+        <!-- 3. 右侧详情面板 (现在是绝对定位+响应式，保证能看到) -->
+        <aside id="right-panel" class="ui-layer absolute lg:relative right-0 top-0 h-full w-[340px] bg-meshy-sidebar border-l border-meshy-border flex flex-col z-40 panel-transition shadow-2xl lg:shadow-none">
+            
+            <!-- 移动端关闭按钮 -->
+            <button class="lg:hidden absolute top-2 right-2 text-gray-400 p-2" onclick="toggleRightPanel()"><i class="fa-solid fa-times"></i></button>
+
+            <div class="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-6">
+                <!-- 作者 -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 p-[1px]">
+                            <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Yi" class="w-full h-full rounded-lg bg-black object-cover">
+                        </div>
+                        <div>
+                            <div class="text-sm font-bold text-white hover:underline cursor-pointer">yixiangli</div>
+                            <div class="text-[10px] text-gray-500">2 Published • 0 Followers</div>
+                        </div>
+                    </div>
+                    <button class="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1 rounded font-medium transition">Follow</button>
+                </div>
+
+                <!-- 标题 -->
+                <div>
+                    <h1 class="text-lg font-bold text-white mb-2">Coffee Break</h1>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="px-2 py-1 rounded bg-white/5 text-[11px] text-gray-400 border border-white/5 hover:bg-white/10 cursor-pointer"><i class="fa-solid fa-mug-hot mr-1"></i> Food</span>
+                        <span class="px-2 py-1 rounded bg-white/5 text-[11px] text-gray-400 border border-white/5 hover:bg-white/10 cursor-pointer">coffee</span>
+                        <span class="px-2 py-1 rounded bg-white/5 text-[11px] text-gray-400 border border-white/5 hover:bg-white/10 cursor-pointer">cup</span>
+                    </div>
+                    <div class="flex items-center gap-4 text-[10px] text-gray-500">
+                        <span class="flex items-center gap-1"><i class="fa-solid fa-cube"></i> Meshy 5</span>
+                        <span class="flex items-center gap-1"><i class="fa-regular fa-copyright"></i> CC0</span>
+                        <span class="flex items-center gap-1"><i class="fa-regular fa-clock"></i> 3 weeks ago</span>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-white/5"></div>
+
+                <!-- 提示词 -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Text Prompt</div>
+                        <button class="text-[10px] text-meshy-accent hover:underline"><i class="fa-regular fa-copy"></i> Copy</button>
+                    </div>
+                    <div class="bg-meshy-panel border border-meshy-border rounded-lg p-3 text-xs text-gray-300 font-mono leading-relaxed select-all">
+                        A high quality 3d model of a takeaway coffee cup, white paper cup body, bright orange cardboard sleeve with corrugated texture, dark brown plastic lid with a sip hole.
+                    </div>
+                </div>
+
+                <!-- 风格 -->
+                <div>
+                    <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Art Style</div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-meshy-input border border-meshy-accent/40 rounded p-2 flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full bg-meshy-accent shadow-[0_0_6px_#ccff00]"></div>
+                            <span class="text-xs text-white">Realistic</span>
+                        </div>
+                        <div class="bg-meshy-input border border-meshy-border rounded p-2 flex items-center gap-2 opacity-50">
+                            <div class="w-2 h-2 rounded-full bg-transparent border border-gray-600"></div>
+                            <span class="text-xs text-gray-400">Cartoon</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 缩略图预览 (模拟 CDN 区域) -->
+                <div id="thumbnail-preview-area" class="hidden">
+                    <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Thumbnail (Generated)</div>
+                    <div class="relative group aspect-video bg-black rounded-lg border border-meshy-border overflow-hidden">
+                        <img id="generated-thumbnail" src="" class="w-full h-full object-cover opacity-80">
+                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/50 transition">
+                             <span class="text-[10px] text-white bg-black/80 px-2 py-1 rounded">Click 'Capture' to update</span>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-yellow-500 mt-1"><i class="fa-solid fa-triangle-exclamation"></i> Upload this image to host for Twitter Card.</p>
+                </div>
+            </div>
+
+            <!-- 底部按钮 -->
+            <div class="p-4 border-t border-meshy-border bg-meshy-sidebar space-y-3 pb-8 lg:pb-4">
+                <button class="w-full bg-meshy-accent hover:bg-meshy-accentHover text-black rounded-lg py-2.5 text-sm font-bold transition flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(204,255,0,0.15)]">
+                    <i class="fa-solid fa-download"></i> Download Model
+                </button>
+                <div class="flex gap-2">
+                    <button class="flex-1 bg-meshy-panel hover:bg-white/5 border border-meshy-border text-white rounded-lg py-2 text-xs font-medium transition flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-share-nodes"></i> Share
+                    </button>
+                    <button class="flex-1 bg-meshy-panel hover:bg-white/5 border border-meshy-border text-white rounded-lg py-2 text-xs font-medium transition flex items-center justify-center gap-1">
+                        <i class="fa-regular fa-bookmark"></i> Save
+                    </button>
+                </div>
+            </div>
+        </aside>
     </div>
 
-    <div id="canvas-container"></div>
+    <!-- 底部状态栏 -->
+    <div class="ui-layer h-8 bg-meshy-sidebar border-t border-meshy-border flex items-center justify-between px-4 text-[10px] text-gray-500 select-none z-50 relative">
+        <div class="flex items-center gap-4">
+            <span class="hover:text-gray-300 cursor-pointer"><i class="fa-solid fa-eye mr-1"></i> 5</span>
+            <span class="hover:text-gray-300 cursor-pointer"><i class="fa-solid fa-share mr-1"></i> 1</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <i class="fa-solid fa-wand-magic-sparkles hover:text-white cursor-pointer"></i>
+            <span class="bg-meshy-accent text-black px-1 rounded font-bold">0</span>
+            <i class="fa-regular fa-flag hover:text-white cursor-pointer"></i>
+        </div>
+    </div>
 
     <script type="module">
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-        const container = document.getElementById('canvas-container');
+        // ----------------- 逻辑控制 -----------------
         
-        // 场景搭建
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x050505);
-        scene.fog = new THREE.FogExp2(0x050505, 0.002);
+        // 1. Embed 模式
+        const urlParams = new URLSearchParams(window.location.search);
+        const isEmbed = urlParams.has('mode') && urlParams.get('mode') === 'embed';
+        if (isEmbed) {
+            document.body.classList.add('embed-mode');
+            const cta = document.getElementById('embed-cta');
+            if(cta) cta.href = "https://yixiang-li.github.io/3d-viewer/"; // 固定跳转到主页
+        } else {
+            // 普通模式：确保右侧面板在小屏下默认关闭，大屏下打开
+            if(window.innerWidth < 1024) {
+                document.getElementById('right-panel').classList.add('panel-closed');
+            }
+        }
 
-        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 0, 15);
+        // 2. 右侧面板开关逻辑 (全局函数)
+        window.toggleRightPanel = function() {
+            const panel = document.getElementById('right-panel');
+            panel.classList.toggle('panel-closed');
+        }
 
-        // 注意：这里开启 preserveDrawingBuffer: true 才能截图
-        const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.setSize(window.innerWidth, window.innerHeight);
+        // 3. Three.js 场景
+        const container = document.getElementById('canvas-wrapper');
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.0;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         container.appendChild(renderer.domElement);
 
-        // 几何体组合
-        const group = new THREE.Group();
-        scene.add(group);
-
-        // 核心球体
-        const geometry = new THREE.IcosahedronGeometry(3, 1);
-        const materialMain = new THREE.MeshPhysicalMaterial({
-            color: 0x000000,
-            roughness: 0.1,
-            metalness: 0.9,
-            clearcoat: 1.0,
-            clearcoatRoughness: 0.1,
-            emissive: 0x220033,
-            emissiveIntensity: 0.2
-        });
-        const mesh = new THREE.Mesh(geometry, materialMain);
-        group.add(mesh);
-
-        // 外部线框
-        const wireGeo = new THREE.IcosahedronGeometry(4.5, 2);
-        const wireMat = new THREE.MeshBasicMaterial({ 
-            color: 0x00ff88, 
-            wireframe: true,
-            transparent: true,
-            opacity: 0.15 
-        });
-        const wireMesh = new THREE.Mesh(wireGeo, wireMat);
-        group.add(wireMesh);
-
-        // 粒子
-        const particleCount = 600;
-        const pGeo = new THREE.BufferGeometry();
-        const pPos = [];
-        
-        for(let i=0; i<particleCount; i++) {
-            const angle = Math.random() * Math.PI * 2;
-            const radius = 6 + Math.random() * 4;
-            const x = Math.cos(angle) * radius;
-            const y = (Math.random() - 0.5) * 4;
-            const z = Math.sin(angle) * radius;
-            pPos.push(x, y, z);
-        }
-        
-        pGeo.setAttribute('position', new THREE.Float32BufferAttribute(pPos, 3));
-        const pMat = new THREE.PointsMaterial({
-            color: 0x00aaff,
-            size: 0.1,
-            transparent: true,
-            opacity: 0.8,
-            blending: THREE.AdditiveBlending
-        });
-        const particleSystem = new THREE.Points(pGeo, pMat);
-        group.add(particleSystem);
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+        camera.position.set(3.5, 2.5, 4.5);
 
         // 灯光
-        const light1 = new THREE.DirectionalLight(0xffffff, 3);
-        light1.position.set(10, 10, 10);
-        scene.add(light1);
-        const light2 = new THREE.PointLight(0xff0066, 10, 50);
-        light2.position.set(-10, -10, 0);
-        scene.add(light2);
-        const light3 = new THREE.PointLight(0x00ffcc, 10, 50);
-        light3.position.set(10, -5, 5);
-        scene.add(light3);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const mainLight = new THREE.DirectionalLight(0xffffff, 1.8);
+        mainLight.position.set(5, 8, 5);
+        mainLight.castShadow = true;
+        mainLight.shadow.mapSize.set(1024, 1024);
+        scene.add(mainLight);
+        const rimLight = new THREE.SpotLight(0x6688ff, 3);
+        rimLight.position.set(-5, 2, -5);
+        scene.add(rimLight);
 
+        // 咖啡杯模型
+        function createCoffeeCup() {
+            const group = new THREE.Group();
+            
+            const matPaper = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6 });
+            const matSleeve = new THREE.MeshStandardMaterial({ color: 0xff8800, roughness: 0.9, bumpScale: 0.05 });
+            const matLid = new THREE.MeshStandardMaterial({ color: 0x221111, roughness: 0.35, metalness: 0.1 });
+
+            // Body
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.65, 1.4, 64), matPaper);
+            body.position.y = 0.7; body.castShadow = true; group.add(body);
+
+            // Sleeve
+            const sleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.81, 0.72, 0.6, 64), matSleeve);
+            sleeve.position.y = 0.7; sleeve.castShadow = true; group.add(sleeve);
+            
+            // Sleeve Textures (Lines)
+            for(let i=0; i<6; i++) {
+                const ring = new THREE.Mesh(new THREE.TorusGeometry(0.77, 0.005, 4, 64), new THREE.MeshBasicMaterial({color: 0xcc6600}));
+                ring.rotation.x = Math.PI/2; 
+                ring.position.y = 0.55 + i*0.06; 
+                group.add(ring);
+            }
+
+            // Lid
+            const lidGroup = new THREE.Group();
+            const lidRim = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.85, 0.15, 64), matLid);
+            lidRim.position.y = 1.45;
+            lidGroup.add(lidRim);
+            const lidTop = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.8, 0.1, 64), matLid);
+            lidTop.position.y = 1.55;
+            lidGroup.add(lidTop);
+            // Sip Hole
+            const hole = new THREE.Mesh(new THREE.CapsuleGeometry(0.06, 0.1, 4, 8), new THREE.MeshStandardMaterial({color:0x000000}));
+            hole.position.set(0, 1.62, 0.5);
+            hole.rotation.x = Math.PI/2;
+            lidGroup.add(hole);
+
+            lidGroup.castShadow = true;
+            group.add(lidGroup);
+            
+            // Shadow Plane
+            const plane = new THREE.Mesh(new THREE.PlaneGeometry(8,8), new THREE.ShadowMaterial({opacity:0.3}));
+            plane.rotation.x = -Math.PI/2; plane.receiveShadow = true; group.add(plane);
+
+            return group;
+        }
+        const model = createCoffeeCup();
+        scene.add(model);
+
+        // 控制器
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
-        controls.autoRotate = true;
-        controls.autoRotateSpeed = 1.0;
-        controls.enableZoom = false;
+        controls.dampingFactor = 0.05;
+        controls.enablePan = false;
+        if(isEmbed) {
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 2.0;
+            controls.addEventListener('start', () => controls.autoRotate = false);
+        }
 
         function animate() {
             requestAnimationFrame(animate);
-            const time = Date.now() * 0.0005;
-            mesh.rotation.y = time;
-            mesh.rotation.z = time * 0.5;
-            wireMesh.rotation.y = -time * 0.5;
-            wireMesh.rotation.x = Math.sin(time) * 0.2;
-            particleSystem.rotation.y = time * 0.2;
-            const scale = 1 + Math.sin(time * 2) * 0.02;
-            mesh.scale.set(scale, scale, scale);
             controls.update();
             renderer.render(scene, camera);
         }
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        document.getElementById('loader').style.opacity = '0';
-        setTimeout(() => document.getElementById('loader').remove(), 500);
-
         animate();
 
-        // ============================================
-        //              截图功能实现
-        // ============================================
-        window.addEventListener('keydown', function(e) {
-            if (e.key.toLowerCase() === 'p') {
-                takeScreenshot();
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            
+            // 响应式面板逻辑
+            if(window.innerWidth >= 1024) {
+                document.getElementById('right-panel').classList.remove('panel-closed');
+            } else {
+                document.getElementById('right-panel').classList.add('panel-closed');
             }
         });
 
-        function takeScreenshot() {
-            // 重新渲染一帧以确保 buffer 里有数据
+        // 4. 截图功能
+        window.takeScreenshot = function() {
+            const overlay = document.getElementById('flash-overlay');
+            overlay.classList.add('do-flash');
+            setTimeout(() => overlay.classList.remove('do-flash'), 500);
+
             renderer.render(scene, camera);
             
-            // 导出图片
-            const link = document.createElement('a');
-            link.setAttribute('download', 'screenshot.png');
-            link.setAttribute('href', renderer.domElement.toDataURL("image/png").replace("image/png", "image/octet-stream"));
-            link.click();
-            
-            // 提示
-            const status = document.getElementById('status-text');
-            const originalText = status.innerText;
-            status.innerText = "Screenshot Saved!";
-            setTimeout(() => status.innerText = originalText, 2000);
-        }
+            try {
+                const dataURL = renderer.domElement.toDataURL('image/png');
+                
+                // 模拟 "CDN 上传" -> 显示在界面右侧
+                const previewArea = document.getElementById('thumbnail-preview-area');
+                const img = document.getElementById('generated-thumbnail');
+                previewArea.classList.remove('hidden');
+                img.src = dataURL;
+
+                // 自动打开面板让用户看到
+                const panel = document.getElementById('right-panel');
+                if(panel.classList.contains('panel-closed')) {
+                    toggleRightPanel();
+                }
+
+                // 同时也下载
+                const link = document.createElement('a');
+                link.download = 'meshy-thumbnail.png';
+                link.href = dataURL;
+                link.click();
+
+            } catch (e) {
+                console.error(e);
+                alert("Screenshot failed.");
+            }
+        };
+
     </script>
 </body>
 </html>
