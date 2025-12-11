@@ -16,8 +16,8 @@
     <meta name="twitter:image" content="https://images.unsplash.com/photo-1622542796254-5b9c46a3a291?q=80&w=1200&auto=format&fit=crop">
     <meta property="og:image" content="https://images.unsplash.com/photo-1622542796254-5b9c46a3a291?q=80&w=1200&auto=format&fit=crop">
     
-    <!-- Player URL: 加上 &v=final_design 刷新缓存 -->
-    <meta name="twitter:player" content="https://yixiang-li.github.io/3d-viewer/index.html?mode=embed&v=final_design">
+    <!-- Player URL: 更新版本号 &v=final_fix_v2 强制刷新 -->
+    <meta name="twitter:player" content="https://yixiang-li.github.io/3d-viewer/index.html?mode=embed&v=final_fix_v2">
     <meta name="twitter:player:width" content="1200">
     <meta name="twitter:player:height" content="1200">
 
@@ -78,7 +78,7 @@
         #app-layout {
             display: grid;
             grid-template-columns: 1fr;
-            grid-template-rows: 55vh 1fr; /* Mobile: 3D 区域稍微大一点 */
+            grid-template-rows: 55vh 1fr; 
             width: 100vw;
             min-height: 100vh;
         }
@@ -128,16 +128,18 @@
             z-index: 0;
         }
 
-        /* 隐藏营销 UI 和 所有的浮动工具栏 */
+        /* [修改] 隐藏逻辑：
+           保留了 #left-sidebar (工具栏) 和 #pbr-popup
+           隐藏了 #content-col (右侧文案), #stats-panel (左上角数据), #bottom-bar (底部状态栏)
+        */
         html.embed-mode #content-col,
-        html.embed-mode .landing-ui,
-        html.embed-mode #left-sidebar,
+        html.embed-mode .landing-only, /* 专门用于 Landing 页的元素 */
         html.embed-mode #stats-panel,
         html.embed-mode #bottom-bar { 
             display: none !important; 
         }
 
-        /* 显示纯净模式 UI */
+        /* 显示纯净模式 CTA */
         html.embed-mode #embed-cta {
             display: flex !important;
         }
@@ -213,18 +215,18 @@
         <div id="canvas-col">
             <div id="canvas-wrapper" class="w-full h-full"></div>
             
-            <!-- 1. 左上角：统计数据 (模拟 Meshy 界面) -->
-            <div id="stats-panel" class="landing-ui absolute top-6 left-6 glass-panel rounded-lg p-3 min-w-[140px] pointer-events-none select-none z-20">
+            <!-- 1. 左上角：统计数据 (标记为 landing-only，只在主页显示) -->
+            <div id="stats-panel" class="landing-only absolute top-6 left-6 glass-panel rounded-lg p-3 min-w-[140px] pointer-events-none select-none z-20">
                 <div class="grid grid-cols-2 gap-y-1 gap-x-3 text-[10px] font-mono text-gray-400">
                     <span>Faces</span> <span class="text-white text-right">40,502</span>
                     <span>Vertices</span> <span class="text-white text-right">26,315</span>
                 </div>
             </div>
 
-            <!-- 2. 左侧边栏：核心工具 (分布按钮) -->
-            <div id="left-sidebar" class="landing-ui absolute top-24 left-6 flex flex-col gap-2 z-20">
+            <!-- 2. 左侧边栏：核心工具 (去掉了 landing-only 类，使其在 Embed 模式也保留) -->
+            <div id="left-sidebar" class="absolute top-24 left-6 flex flex-col gap-2 z-20">
                 <div class="glass-panel rounded-lg p-1 flex flex-col gap-1">
-                    <!-- 材质 PBR 设置 (点击弹出) -->
+                    <!-- 材质 PBR 设置 -->
                     <button class="tool-btn" id="btn-pbr" onclick="togglePBRPopup()" title="Material Settings">
                         <i class="fa-solid fa-wand-magic-sparkles"></i>
                     </button>
@@ -239,8 +241,8 @@
                 </div>
             </div>
 
-            <!-- PBR 设置弹窗 (初始隐藏) -->
-            <div id="pbr-popup" class="landing-ui hidden absolute top-24 left-20 glass-panel rounded-lg p-4 w-48 z-30 animate-fade-in">
+            <!-- PBR 设置弹窗 (保留在 Embed 模式) -->
+            <div id="pbr-popup" class="hidden absolute top-24 left-20 glass-panel rounded-lg p-4 w-48 z-30 animate-fade-in">
                 <div class="flex justify-between items-center mb-3">
                     <span class="text-[10px] font-bold text-gray-400 uppercase">Material</span>
                     <button onclick="togglePBRPopup()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
@@ -261,8 +263,8 @@
                 </div>
             </div>
 
-            <!-- 3. 底部居中：状态栏/导航 -->
-            <div id="bottom-bar" class="landing-ui absolute bottom-6 left-1/2 -translate-x-1/2 glass-panel rounded-full px-5 py-2 flex items-center gap-5 z-20 select-none">
+            <!-- 3. 底部居中：状态栏/导航 (标记为 landing-only，保持 embed 模式底部干净) -->
+            <div id="bottom-bar" class="landing-only absolute bottom-6 left-1/2 -translate-x-1/2 glass-panel rounded-full px-5 py-2 flex items-center gap-5 z-20 select-none">
                 <div class="flex items-center gap-2 text-[10px] text-meshy-accent font-bold px-2 py-0.5 bg-meshy-accent/10 rounded border border-meshy-accent/20 uppercase tracking-wide">
                     <i class="fa-solid fa-bolt"></i> Preview
                 </div>
@@ -278,7 +280,7 @@
                 </label>
             </div>
 
-            <!-- Embed 模式 CTA -->
+            <!-- Embed 模式 CTA (左下角) -->
             <a id="embed-cta" href="https://meshy.ai" target="_blank" style="display:none;" class="absolute bottom-5 left-5 z-50 bg-white text-black py-2.5 px-5 rounded-full font-bold text-sm flex items-center gap-2 hover:scale-105 transition-transform shadow-lg no-underline cursor-pointer">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5 9.5 9.75 12 11zm0 2.5l-5-2.5-5 2.5 10 5 10-5-5-2.5-5 2.5z"/></svg>
                 Claim Gift on Meshy
@@ -288,7 +290,7 @@
         </div>
 
         <!-- 右侧/下方: 礼品信息区域 (保持原样) -->
-        <div id="content-col" class="landing-ui flex flex-col justify-center items-center p-6 lg:p-12 overflow-y-auto custom-scrollbar">
+        <div id="content-col" class="flex flex-col justify-center items-center p-6 lg:p-12 overflow-y-auto custom-scrollbar">
             
             <!-- Logo -->
             <div class="absolute top-6 left-6 lg:top-8 lg:left-8 flex items-center gap-2 text-meshy-accent font-bold text-xl tracking-tight">
