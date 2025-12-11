@@ -13,13 +13,11 @@
     <meta name="twitter:site" content="@MeshyAI">
     <meta name="twitter:title" content="Your friend gifted you a free month on Meshy!">
     <meta name="twitter:description" content="Interact with this 3D model and claim your reward to start creating.">
-    
-    <!-- 预览图: 替换为你实际的截图链接 -->
     <meta name="twitter:image" content="https://images.unsplash.com/photo-1622542796254-5b9c46a3a291?q=80&w=1200&auto=format&fit=crop">
     <meta property="og:image" content="https://images.unsplash.com/photo-1622542796254-5b9c46a3a291?q=80&w=1200&auto=format&fit=crop">
     
-    <!-- Player URL: 加上 &v=referral 刷新缓存 -->
-    <meta name="twitter:player" content="https://yixiang-li.github.io/3d-viewer/index.html?mode=embed&v=referral">
+    <!-- Player URL: 加上 &v=final_design 刷新缓存 -->
+    <meta name="twitter:player" content="https://yixiang-li.github.io/3d-viewer/index.html?mode=embed&v=final_design">
     <meta name="twitter:player:width" content="1200">
     <meta name="twitter:player:height" content="1200">
 
@@ -55,16 +53,15 @@
                             accentHover: '#b3e600',
                             text: '#ffffff',
                             subtext: '#9ca3af',
-                            border: '#222222'
+                            border: '#222222',
+                            panel: 'rgba(20, 20, 20, 0.85)'
                         }
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
-                        display: ['Clash Display', 'Inter', 'sans-serif'], // 假设字体
                     },
-                    backgroundImage: {
-                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-                        'hero-glow': 'conic-gradient(from 180deg at 50% 50%, #2a2a2a 0deg, #000000 180deg, #2a2a2a 360deg)',
+                    boxShadow: {
+                        'neon': '0 0 15px rgba(204, 255, 0, 0.3)',
                     }
                 }
             }
@@ -78,23 +75,21 @@
 
         /* ================= 布局系统 ================= */
         
-        /* 默认 Landing Page 布局: Desktop 左右分栏, Mobile 上下堆叠 */
         #app-layout {
             display: grid;
-            grid-template-columns: 1fr; /* Mobile */
-            grid-template-rows: 45vh 1fr; /* Mobile: Canvas 上, Content 下 */
+            grid-template-columns: 1fr;
+            grid-template-rows: 55vh 1fr; /* Mobile: 3D 区域稍微大一点 */
             width: 100vw;
             min-height: 100vh;
         }
 
         @media (min-width: 1024px) {
             #app-layout {
-                grid-template-columns: 1.2fr 0.8fr; /* Desktop: Canvas 宽一些 */
+                grid-template-columns: 1.2fr 0.8fr;
                 grid-template-rows: 100vh;
             }
         }
 
-        /* Canvas 容器 */
         #canvas-col {
             position: relative;
             width: 100%;
@@ -103,7 +98,6 @@
             overflow: hidden;
         }
 
-        /* 内容容器 */
         #content-col {
             position: relative;
             z-index: 10;
@@ -119,12 +113,11 @@
         }
 
         /* ================= Embed Mode (纯净模式) ================= */
-        /* 当检测到 embed 模式时，强制覆盖上面的布局 */
         
         html.embed-mode body { overflow: hidden; }
         
         html.embed-mode #app-layout {
-            display: block; /* 移除 grid */
+            display: block;
             width: 100vw;
             height: 100vh;
         }
@@ -135,41 +128,76 @@
             z-index: 0;
         }
 
+        /* 隐藏营销 UI 和 所有的浮动工具栏 */
         html.embed-mode #content-col,
-        html.embed-mode .landing-ui {
-            display: none !important; /* 隐藏所有营销内容 */
+        html.embed-mode .landing-ui,
+        html.embed-mode #left-sidebar,
+        html.embed-mode #stats-panel,
+        html.embed-mode #bottom-bar { 
+            display: none !important; 
         }
 
+        /* 显示纯净模式 UI */
         html.embed-mode #embed-cta {
-            display: flex !important; /* 显示简单的 embed 按钮 */
+            display: flex !important;
         }
 
-        /* ================= 视觉特效 ================= */
-        
-        /* 荧光绿按钮发光 */
-        .btn-glow {
-            box-shadow: 0 0 20px rgba(204, 255, 0, 0.15);
-            transition: all 0.3s ease;
+        /* ================= UI 组件样式 ================= */
+
+        /* 范围滑块自定义 */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
         }
-        .btn-glow:hover {
-            box-shadow: 0 0 30px rgba(204, 255, 0, 0.4);
-            transform: translateY(-2px);
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 10px;
+            width: 10px;
+            border-radius: 50%;
+            background: #ccff00;
+            cursor: pointer;
+            margin-top: -3px;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #444;
+            border-radius: 2px;
         }
 
-        /* 3D 浮动卡片 */
-        .glass-card {
-            background: linear-gradient(145deg, rgba(20,20,20,0.9) 0%, rgba(10,10,10,0.95) 100%);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.05);
+        /* 玻璃质感工具栏 */
+        .glass-panel {
+            background: var(--meshy-panel);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        /* 闪光特效 */
-        @keyframes flash { 0% { opacity: 1; } 100% { opacity: 0; } }
-        .do-flash { position: fixed; inset: 0; background: white; z-index: 100; animation: flash 0.3s ease-out forwards; pointer-events: none; }
+        /* 工具栏按钮 */
+        .tool-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            transition: all 0.2s;
+            background: transparent;
+        }
+        .tool-btn:hover, .tool-btn.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
         
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+        /* 截图闪光 */
+        @keyframes flash { 0% { opacity: 1; } 100% { opacity: 0; } }
+        .do-flash { position: fixed; inset: 0; background: white; z-index: 100; animation: flash 0.3s ease-out forwards; pointer-events: none; }
     </style>
 
     <script type="importmap">
@@ -185,30 +213,82 @@
         <div id="canvas-col">
             <div id="canvas-wrapper" class="w-full h-full"></div>
             
-            <!-- 仅在 Landing 页显示: 简单的交互提示 -->
-            <div class="landing-ui absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 px-4 py-2 rounded-full bg-black/40 backdrop-blur border border-white/5 text-xs text-gray-400 pointer-events-none select-none">
-                <span class="flex items-center gap-1.5"><i class="fa-solid fa-arrows-up-down-left-right"></i> Rotate</span>
-                <span class="w-px h-3 bg-white/10"></span>
-                <span class="flex items-center gap-1.5"><i class="fa-solid fa-magnifying-glass"></i> Zoom</span>
+            <!-- 1. 左上角：统计数据 (模拟 Meshy 界面) -->
+            <div id="stats-panel" class="landing-ui absolute top-6 left-6 glass-panel rounded-lg p-3 min-w-[140px] pointer-events-none select-none z-20">
+                <div class="grid grid-cols-2 gap-y-1 gap-x-3 text-[10px] font-mono text-gray-400">
+                    <span>Faces</span> <span class="text-white text-right">40,502</span>
+                    <span>Vertices</span> <span class="text-white text-right">26,315</span>
+                </div>
             </div>
 
-            <!-- Embed 模式 CTA (默认隐藏) -->
+            <!-- 2. 左侧边栏：核心工具 (分布按钮) -->
+            <div id="left-sidebar" class="landing-ui absolute top-24 left-6 flex flex-col gap-2 z-20">
+                <div class="glass-panel rounded-lg p-1 flex flex-col gap-1">
+                    <!-- 材质 PBR 设置 (点击弹出) -->
+                    <button class="tool-btn" id="btn-pbr" onclick="togglePBRPopup()" title="Material Settings">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </button>
+                    <!-- 线框模式 -->
+                    <button class="tool-btn" id="btn-wireframe" onclick="toggleWireframe()" title="Toggle Wireframe">
+                        <i class="fa-solid fa-border-all"></i>
+                    </button>
+                    <!-- 截图 -->
+                    <button class="tool-btn" onclick="takeScreenshot()" title="Capture Screenshot">
+                        <i class="fa-solid fa-camera"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- PBR 设置弹窗 (初始隐藏) -->
+            <div id="pbr-popup" class="landing-ui hidden absolute top-24 left-20 glass-panel rounded-lg p-4 w-48 z-30 animate-fade-in">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-[10px] font-bold text-gray-400 uppercase">Material</span>
+                    <button onclick="togglePBRPopup()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-[10px] text-gray-400 mb-1">
+                            <span>Roughness</span> <span id="val-roughness" class="text-white font-mono">0.5</span>
+                        </div>
+                        <input type="range" min="0" max="1" step="0.01" value="0.5" oninput="updateMaterial('roughness', this.value)">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-[10px] text-gray-400 mb-1">
+                            <span>Metalness</span> <span id="val-metalness" class="text-white font-mono">0.1</span>
+                        </div>
+                        <input type="range" min="0" max="1" step="0.01" value="0.1" oninput="updateMaterial('metalness', this.value)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. 底部居中：状态栏/导航 -->
+            <div id="bottom-bar" class="landing-ui absolute bottom-6 left-1/2 -translate-x-1/2 glass-panel rounded-full px-5 py-2 flex items-center gap-5 z-20 select-none">
+                <div class="flex items-center gap-2 text-[10px] text-meshy-accent font-bold px-2 py-0.5 bg-meshy-accent/10 rounded border border-meshy-accent/20 uppercase tracking-wide">
+                    <i class="fa-solid fa-bolt"></i> Preview
+                </div>
+                <div class="w-px h-3 bg-white/10"></div>
+                <div class="flex items-center gap-4 text-xs text-gray-400">
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-mouse"></i> Orbit</span>
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-hand"></i> Pan</span>
+                </div>
+                <div class="w-px h-3 bg-white/10"></div>
+                <label class="flex items-center gap-2 cursor-pointer group">
+                    <span class="text-xs text-gray-400 group-hover:text-white transition"><i class="fa-solid fa-rotate mr-1"></i> Auto</span>
+                    <input type="checkbox" checked onchange="toggleAutoRotate(this.checked)" class="accent-meshy-accent w-3 h-3 cursor-pointer">
+                </label>
+            </div>
+
+            <!-- Embed 模式 CTA -->
             <a id="embed-cta" href="https://meshy.ai" target="_blank" style="display:none;" class="absolute bottom-5 left-5 z-50 bg-white text-black py-2.5 px-5 rounded-full font-bold text-sm flex items-center gap-2 hover:scale-105 transition-transform shadow-lg no-underline cursor-pointer">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5 9.5 9.75 12 11zm0 2.5l-5-2.5-5 2.5 10 5 10-5-5-2.5-5 2.5z"/></svg>
                 Claim Gift on Meshy
             </a>
             
-            <!-- 截图闪光层 -->
             <div id="flash-overlay"></div>
-            
-            <!-- 右上角截图按钮 (Landing UI) -->
-            <button onclick="takeScreenshot()" class="landing-ui absolute top-6 right-6 bg-black/50 hover:bg-black/80 text-white p-2.5 rounded-xl border border-white/10 transition backdrop-blur z-20 group" title="Capture Thumbnail">
-                <i class="fa-solid fa-camera group-hover:scale-110 transition-transform"></i>
-            </button>
         </div>
 
-        <!-- 右侧/下方: 礼品信息区域 (仅 Landing 页显示) -->
-        <div id="content-col" class="landing-ui flex flex-col justify-center items-center p-6 lg:p-12 xl:p-20 overflow-y-auto custom-scrollbar">
+        <!-- 右侧/下方: 礼品信息区域 (保持原样) -->
+        <div id="content-col" class="landing-ui flex flex-col justify-center items-center p-6 lg:p-12 overflow-y-auto custom-scrollbar">
             
             <!-- Logo -->
             <div class="absolute top-6 left-6 lg:top-8 lg:left-8 flex items-center gap-2 text-meshy-accent font-bold text-xl tracking-tight">
@@ -216,79 +296,76 @@
                 Meshy
             </div>
 
-            <div class="w-full max-w-lg space-y-8 animate-fade-in">
+            <div class="w-full max-w-lg space-y-6">
                 
-                <!-- 邀请人信息 -->
-                <div class="flex items-center gap-4 p-3 bg-white/5 rounded-2xl border border-white/5 w-fit">
-                    <div class="relative">
-                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 p-[2px]">
-                            <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Yi" class="w-full h-full rounded-[10px] bg-black object-cover">
+                <!-- Invited By 卡片 -->
+                <div class="relative group mt-8 lg:mt-0">
+                    <div class="absolute -inset-0.5 bg-gradient-to-r from-meshy-accent to-blue-500 rounded-2xl opacity-20 group-hover:opacity-40 blur transition duration-500"></div>
+                    
+                    <div class="relative bg-meshy-card rounded-xl p-4 flex items-center gap-5 border border-white/10">
+                        <div class="relative shrink-0">
+                            <div class="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-meshy-accent to-transparent">
+                                <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Yi" class="w-full h-full rounded-full bg-black object-cover">
+                            </div>
+                            <div class="absolute -bottom-1 -right-1 bg-black rounded-full p-1">
+                                <i class="fa-solid fa-certificate text-meshy-accent text-sm"></i>
+                            </div>
                         </div>
-                        <div class="absolute -bottom-1 -right-1 bg-green-500 w-4 h-4 rounded-full border-2 border-black"></div>
-                    </div>
-                    <div>
-                        <div class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mb-0.5">Invited by</div>
-                        <div class="text-white font-bold text-base">yixiangli</div>
+                        
+                        <div class="flex-1 min-w-0">
+                            <p class="text-[10px] text-meshy-accent font-bold tracking-widest uppercase mb-1">Official Invitation</p>
+                            <div class="flex items-baseline gap-2">
+                                <h3 class="text-white font-bold text-lg truncate">yixiangli</h3>
+                                <span class="text-xs text-gray-500">invited you</span>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1 truncate">"Check out this 3D model I made!"</p>
+                        </div>
+                        <div class="text-gray-600">
+                            <i class="fa-solid fa-quote-right text-2xl opacity-20"></i>
+                        </div>
                     </div>
                 </div>
 
-                <!-- 主要标题 -->
-                <div>
-                    <div class="inline-block px-3 py-1 rounded-full bg-meshy-accent/10 border border-meshy-accent/20 text-meshy-accent text-xs font-bold mb-4">
-                        🎉 YOU'RE INVITED
-                    </div>
-                    <h1 class="text-4xl lg:text-5xl font-extrabold text-white leading-[1.1] mb-4">
-                        Your Friend Has <br>
-                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-meshy-accent to-green-400">Gifted You a Free Month</span>
+                <!-- 营销文案 -->
+                <div class="text-center lg:text-left py-4">
+                    <h1 class="text-3xl lg:text-5xl font-extrabold text-white leading-tight mb-4">
+                        Unlock Your <br>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-meshy-accent to-white">Creative Potential</span>
                     </h1>
-                    <p class="text-gray-400 text-lg leading-relaxed">
-                        Explore the power of AI 3D creation. Dive into 3D modeling with Meshy.ai, trusted by over 2 million creators.
+                    <p class="text-gray-400 text-sm lg:text-base leading-relaxed">
+                        Claim your free month of Meshy Pro. Experience ultra-fast 3D generation, high-poly downloads, and AI texturing tools.
                     </p>
                 </div>
 
-                <!-- 礼品卡片 -->
-                <div class="glass-card p-6 rounded-2xl relative overflow-hidden group">
-                    <!-- 背景装饰光 -->
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-meshy-accent/20 blur-[60px] rounded-full group-hover:bg-meshy-accent/30 transition duration-500"></div>
+                <!-- 礼品详情卡 -->
+                <div class="bg-gradient-to-b from-white/5 to-transparent p-6 rounded-2xl border border-white/5">
+                    <div class="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
+                        <div>
+                            <div class="text-white font-bold text-lg">Pro Plan Trial</div>
+                            <div class="text-meshy-accent text-xs">Valid for 30 days</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-gray-400 line-through text-sm">$20.00</div>
+                            <div class="text-white font-bold text-xl">FREE</div>
+                        </div>
+                    </div>
                     
-                    <div class="relative z-10">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-white font-bold text-xl">Meshy Pro Plan</h3>
-                                <p class="text-gray-400 text-sm">1 Month Free Trial</p>
-                            </div>
-                            <div class="text-2xl font-bold text-white">$20 <span class="text-sm text-gray-500 font-normal line-through">$0</span></div>
-                        </div>
-                        <div class="flex gap-2 text-xs text-gray-300 mb-6">
-                            <span class="bg-white/10 px-2 py-1 rounded"><i class="fa-solid fa-check mr-1 text-meshy-accent"></i> Fast Generation</span>
-                            <span class="bg-white/10 px-2 py-1 rounded"><i class="fa-solid fa-check mr-1 text-meshy-accent"></i> Download GLB</span>
-                        </div>
-                        
-                        <!-- 主 CTA 按钮 -->
-                        <button class="w-full bg-gradient-to-r from-meshy-accent to-green-400 hover:from-meshy-accentHover hover:to-green-500 text-black font-extrabold text-lg py-4 rounded-xl btn-glow flex items-center justify-center gap-2 group/btn">
-                            Register & Claim Gift
-                            <i class="fa-solid fa-arrow-right group-hover/btn:translate-x-1 transition-transform"></i>
-                        </button>
-                        <p class="text-center text-xs text-gray-500 mt-3">No credit card required for trial.</p>
+                    <button class="w-full bg-meshy-accent hover:bg-meshy-accentHover text-black font-extrabold py-3.5 rounded-xl transition-all shadow-neon flex items-center justify-center gap-2 group">
+                        Register to Claim
+                        <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                    
+                    <div class="mt-4 flex justify-center gap-6 text-[10px] text-gray-500">
+                        <span><i class="fa-regular fa-circle-check mr-1"></i> No Credit Card</span>
+                        <span><i class="fa-regular fa-circle-check mr-1"></i> Cancel Anytime</span>
                     </div>
-                </div>
-
-                <!-- 社区证明 -->
-                <div class="pt-6 border-t border-white/5 flex items-center justify-between text-sm text-gray-400">
-                    <div class="flex -space-x-2">
-                        <img class="w-8 h-8 rounded-full border-2 border-black" src="https://api.dicebear.com/7.x/avataaars/svg?seed=1" alt="">
-                        <img class="w-8 h-8 rounded-full border-2 border-black" src="https://api.dicebear.com/7.x/avataaars/svg?seed=2" alt="">
-                        <img class="w-8 h-8 rounded-full border-2 border-black" src="https://api.dicebear.com/7.x/avataaars/svg?seed=3" alt="">
-                        <div class="w-8 h-8 rounded-full border-2 border-black bg-gray-800 flex items-center justify-center text-[10px] text-white font-bold">+2M</div>
-                    </div>
-                    <div>Joined by 2,000,000+ creators</div>
                 </div>
 
             </div>
         </div>
     </div>
 
-    <!-- 缩略图预览模态框 (截图用) -->
+    <!-- 缩略图预览模态框 -->
     <div id="thumbnail-modal" class="hidden fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
         <div class="bg-meshy-card border border-white/10 rounded-2xl p-6 max-w-lg w-full">
             <h3 class="text-white font-bold mb-4">Thumbnail Generated</h3>
@@ -310,17 +387,13 @@
         // ----------------- 逻辑控制 -----------------
         const isEmbed = window.__IS_EMBED__;
         
-        // 如果是 Embed 模式，确保 Canvas 占据全屏 (虽然 CSS 已经处理，JS 辅助确认)
         if (isEmbed) {
-             console.log("Embed Mode: Activating pure viewer");
              const cta = document.getElementById('embed-cta');
-             if(cta) cta.href = window.location.href.split('?')[0]; // 指向 Landing Page
+             if(cta) cta.href = window.location.href.split('?')[0]; 
         }
 
-        // Three.js 场景设置
         const container = document.getElementById('canvas-wrapper');
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
-        // 初始大小设置，稍后 resize 会修正
         renderer.setSize(container.clientWidth, container.clientHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -329,11 +402,6 @@
         container.appendChild(renderer.domElement);
 
         const scene = new THREE.Scene();
-        // 在 Landing 页模式下，给 Canvas 一个微弱的背景，Embed 模式下纯黑
-        if (!isEmbed) {
-            // CSS handles gradient, logic here handles specific scene elements
-        }
-
         const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
         camera.position.set(3.5, 2.5, 4.5);
 
@@ -349,13 +417,20 @@
         rimLight.position.set(-5, 2, -5);
         scene.add(rimLight);
 
+        // 模型材质引用 (用于更新)
+        let modelMaterials = [];
+        let isWireframe = false;
+
         // 创建咖啡杯模型
         function createCoffeeCup() {
             const group = new THREE.Group();
             
-            const matPaper = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6 });
-            const matSleeve = new THREE.MeshStandardMaterial({ color: 0xff8800, roughness: 0.9, bumpScale: 0.05 });
-            const matLid = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, metalness: 0.1 }); // More plastic look
+            // 材质定义
+            const matPaper = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5, metalness: 0.1, name: 'paper' });
+            const matSleeve = new THREE.MeshStandardMaterial({ color: 0xff8800, roughness: 0.8, metalness: 0.0, name: 'sleeve' });
+            const matLid = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, metalness: 0.1, name: 'lid' });
+
+            modelMaterials = [matPaper, matSleeve, matLid];
 
             // Body
             const body = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.65, 1.4, 64), matPaper);
@@ -405,18 +480,13 @@
         controls.enablePan = false;
         controls.minDistance = 2;
         controls.maxDistance = 10;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 2.0;
         
-        // 自动旋转策略
-        if(isEmbed) {
-            controls.autoRotate = true;
-            controls.autoRotateSpeed = 2.0;
-            controls.addEventListener('start', () => controls.autoRotate = false);
-        } else {
-            // Landing page 也稍微转一点吸引注意，但慢一点
-            controls.autoRotate = true;
-            controls.autoRotateSpeed = 0.5;
-            controls.addEventListener('start', () => controls.autoRotate = false);
-        }
+        // 交互时暂停旋转
+        controls.addEventListener('start', () => {
+             // 仅为了更平滑的体验，不做强制停止
+        });
 
         function animate() {
             requestAnimationFrame(animate);
@@ -425,21 +495,53 @@
         }
         animate();
 
-        // 窗口调整处理
+        // 窗口调整
         function onWindowResize() {
-            // 重新获取容器尺寸，因为 Grid 布局可能会改变容器大小
             const width = container.clientWidth;
             const height = container.clientHeight;
-            
             camera.aspect = width / height;
             camera.updateProjectionMatrix();
             renderer.setSize(width, height);
         }
         window.addEventListener('resize', onWindowResize);
-        // 初始化调用一次以防万一
         onWindowResize();
 
-        // 截图功能
+        // ----------------- UI 交互功能 -----------------
+        
+        // 1. 更新材质 (PBR)
+        window.updateMaterial = function(prop, val) {
+            const value = parseFloat(val);
+            document.getElementById(`val-${prop}`).innerText = value;
+            modelMaterials.forEach(mat => {
+                if(mat[prop] !== undefined) mat[prop] = value;
+            });
+        };
+
+        // 2. 切换线框
+        window.toggleWireframe = function() {
+            isWireframe = !isWireframe;
+            const btn = document.getElementById('btn-wireframe');
+            btn.classList.toggle('active', isWireframe);
+            
+            modelMaterials.forEach(mat => {
+                mat.wireframe = isWireframe;
+            });
+        };
+
+        // 3. 切换 PBR 弹窗
+        window.togglePBRPopup = function() {
+            const popup = document.getElementById('pbr-popup');
+            const btn = document.getElementById('btn-pbr');
+            popup.classList.toggle('hidden');
+            btn.classList.toggle('active', !popup.classList.contains('hidden'));
+        };
+
+        // 4. 切换自动旋转
+        window.toggleAutoRotate = function(isChecked) {
+            controls.autoRotate = isChecked;
+        };
+
+        // 5. 截图
         window.takeScreenshot = function() {
             const overlay = document.getElementById('flash-overlay');
             overlay.classList.add('do-flash');
@@ -449,16 +551,12 @@
             
             try {
                 const dataURL = renderer.domElement.toDataURL('image/png');
-                
-                // 显示模态框
                 const modal = document.getElementById('thumbnail-modal');
                 const img = document.getElementById('modal-img');
                 const btn = document.getElementById('download-link');
-                
                 img.src = dataURL;
                 btn.href = dataURL;
                 modal.classList.remove('hidden');
-
             } catch (e) {
                 console.error(e);
                 alert("Screenshot failed.");
