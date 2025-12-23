@@ -16,7 +16,7 @@
     <meta name="twitter:site" content="@MeshyAI">
     <meta name="twitter:title" content="Your friend gifted you a free month on Meshy!">
     <meta name="twitter:description" content="Interact with this 3D model and claim your reward to start creating.">
-    <meta name="twitter:image" content="https://cdn.meshy.ai/referral-assets/cup2.gif">
+    <meta name="twitter:image" content="https://cdn.meshy.ai/referral-assets/cup_cdn.png">
 
     <!-- [关键修改] 调整播放器比例为 16:9 (标准视频比例) -->
     <!-- 之前的 1200x1200 会导致 X 上显示正方形，改成 1280x720 会显示为正常的宽屏矩形 -->
@@ -36,8 +36,11 @@
     <meta property="og:image:height" content="630">
     <meta property="og:image:type" content="image/png">
 
-    <!-- 指向高清 MP4 -->
+    <!-- 2. 视频增强层 (Telegram, Discord, Slack) -->
+    <!-- 它们会忽略上面的静态图，优先播放这里的 MP4 -->
     <meta property="og:video" content="https://cdn.meshy.ai/referral-assets/cup2.mp4">
+    <!-- [建议添加] secure_url 用于兼容严格的 HTTPS 客户端 -->
+    <meta property="og:video:secure_url" content="https://cdn.meshy.ai/referral-assets/cup2.mp4">
     <meta property="og:video:type" content="video/mp4">
     <meta property="og:video:width" content="1280">
     <meta property="og:video:height" content="720">
