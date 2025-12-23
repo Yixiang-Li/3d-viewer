@@ -11,27 +11,18 @@
     <!--                          社交媒体预览配置 (Social Media Preview)                     -->
     <!-- ================================================================================== -->
 
-    <!-- 1. Twitter (X) 专用配置 -->
-    <meta name="twitter:card" content="player">
-    <meta name="twitter:site" content="@MeshyAI">
-    <meta name="twitter:title" content="Your friend gifted you a free month on Meshy!">
-    <meta name="twitter:description" content="Interact with this 3D model and claim your reward to start creating.">
-    <meta name="twitter:image" content="https://cdn.meshy.ai/referral-assets/cup_cdn.png">
-
-    <!-- [关键修改] 调整播放器比例为 16:9 (标准视频比例) -->
-    <!-- 之前的 1200x1200 会导致 X 上显示正方形，改成 1280x720 会显示为正常的宽屏矩形 -->
-    <meta name="twitter:player" content="https://yixiang-li.github.io/3d-viewer/index.html?mode=embed&v=ratio_fix_v1">
-    <meta name="twitter:player:width" content="1280">
-    <meta name="twitter:player:height" content="720">
-
-    <!-- 2. 通用 Open Graph 配置 (Discord, Telegram, WhatsApp, LinkedIn 等) -->
-    <meta property="og:type" content="website">
+    <!-- 1. 通用 Open Graph 配置 (基础层) -->
+    <!-- 适用：WhatsApp, Facebook, LinkedIn (它们只读这里) -->
+    <!-- [关键修改] 将类型改为 video.other -->
+    <!-- 原因：当存在 twitter:card=player 时，Telegram 会默认忽略 og:video。 -->
+    <!-- 改为 video.other 可以强制告诉 Telegram "这是一个视频页面"，从而激活 MP4 自动播放 -->
+    <meta property="og:type" content="video.other">
     <meta property="og:title" content="Your friend gifted you a free month on Meshy!">
     <meta property="og:description" content="Interact with this 3D model and claim your reward to start creating.">
     <meta property="og:url" content="https://yixiang-li.github.io/3d-viewer/">
     
+    <!-- [WhatsApp 安全区] 静态图放在第一位，确保被抓取 -->
     <meta property="og:image" content="https://cdn.meshy.ai/referral-assets/cup_cdn.png">
-    <!-- [关键] 明确告诉 Discord 图片是大图尺寸 -->
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:type" content="image/png">
@@ -45,8 +36,22 @@
     <meta property="og:video:width" content="1280">
     <meta property="og:video:height" content="720">
 
-<!-- 只有在 Email 模板的 HTML 里，才引用那个 .gif 文件 -->
-<!-- <img src=".../email.gif"> -->
+    <!-- 3. Twitter (X) Player Card 配置 -->
+    <meta name="twitter:card" content="player">
+    <meta name="twitter:site" content="@MeshyAI">
+    <meta name="twitter:title" content="Your friend gifted you a free month on Meshy!">
+    <meta name="twitter:description" content="Interact with this 3D model and claim your reward to start creating.">
+    
+    <!-- [修正] 建议改回静态 PNG。 -->
+    <!-- 原因：Player Card 需要一张加载极快的高清封面。GIF 可能会导致封面加载失败。 -->
+    <meta name="twitter:image" content="https://cdn.meshy.ai/referral-assets/cup_cdn.png">
+
+    <!-- Player Iframe 地址 -->
+    <meta name="twitter:player" content="https://yixiang-li.github.io/3d-viewer/index.html?mode=embed&v=ratio_fix_v1">
+    <meta name="twitter:player:width" content="1280">
+    <meta name="twitter:player:height" content="720">
+
+    <!-- ... 其余脚本保持不变 ... -->
     
     <!-- 提前执行的 Embed 检测脚本 -->
     <script>
